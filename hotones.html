@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chili Random Generátor</title>
+  <style>
+    :root{
+      --bg: #0c0b0a;
+      --card: rgba(18, 14, 12, 0.78);
+      --text: #f4f1ea;
+      --muted: rgba(244, 241, 234, 0.75);
+      --red: #ff2e2e;
+      --orange: #ff7a18;
+      --yellow: #ffd34d;
+      --shadow: rgba(0,0,0,0.55);
+      --ring: rgba(255, 122, 24, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+    body{
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Háttérkép + sötétítés */
+    body::before{
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0.70), rgba(0,0,0,0.85)),
+        url("https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Madame_Jeanette_and_other_chillies.jpg/1200px-Madame_Jeanette_and_other_chillies.jpg");
+      background-size: cover;
+      background-position: center;
+      filter: saturate(1.25) contrast(1.05);
+      z-index: -2;
+    }
+
+    /* finom “forróság” réteg */
+    body::after{
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(800px 420px at 20% 15%, rgba(255, 46, 46, 0.18), transparent 60%),
+        radial-gradient(900px 520px at 80% 20%, rgba(255, 122, 24, 0.16), transparent 60%),
+        radial-gradient(700px 500px at 50% 95%, rgba(255, 211, 77, 0.10), transparent 60%);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .wrap{
+      width: min(760px, 100%);
+    }
+
+    .card{
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      box-shadow: 0 18px 50px var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .header{
+      padding: 22px 22px 14px 22px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .title{
+      margin: 0 0 6px 0;
+      font-size: clamp(22px, 3vw, 30px);
+      letter-spacing: 0.2px;
+    }
+
+    .subtitle{
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .content{
+      padding: 18px 22px 22px 22px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .result{
+      display: grid;
+      gap: 6px;
+      padding: 16px;
+      border-radius: 14px;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.08);
+      position: relative;
+    }
+
+    .label{
+      font-size: 12px;
+      color: rgba(244, 241, 234, 0.7);
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+
+    #eredmeny{
+      margin: 0;
+      font-size: clamp(26px, 4.2vw, 44px);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: 0.3px;
+      background: linear-gradient(90deg, var(--red), var(--orange), var(--yellow));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 24px rgba(255, 122, 24, 0.12);
+      min-height: 1.1em;
+    }
+
+    .controls{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    button{
+      appearance: none;
+      border: 0;
+      cursor: pointer;
+      padding: 12px 16px;
+      border-radius: 12px;
+      color: #120e0c;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      background: linear-gradient(90deg, var(--red), var(--orange), var(--yellow));
+      box-shadow: 0 12px 26px rgba(255, 46, 46, 0.16);
+      transition: transform 0.08s ease, filter 0.15s ease;
+    }
+
+    button:hover{
+      filter: brightness(1.05);
+    }
+
+    button:active{
+      transform: translateY(1px) scale(0.99);
+    }
+
+    .tiny{
+      font-size: 12px;
+      color: rgba(244, 241, 234, 0.7);
+    }
+
+    .pill{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.22);
+      color: rgba(244, 241, 234, 0.85);
+      font-size: 12px;
+    }
+
+    .dot{
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, var(--red), var(--orange));
+      box-shadow: 0 0 16px rgba(255, 46, 46, 0.35);
+      flex: 0 0 auto;
+    }
+
+    .footer{
+      padding: 14px 22px 18px 22px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    a{ color: rgba(244,241,234,0.85); }
+    a:hover{ color: #fff; }
+
+    /* kis “rázás” animáció a dobáskor */
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      20% { transform: translateX(-2px); }
+      40% { transform: translateX(2px); }
+      60% { transform: translateX(-1px); }
+      80% { transform: translateX(1px); }
+      100% { transform: translateX(0); }
+    }
+    .shake { animation: shake 180ms linear; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card" id="card">
+      <div class="header">
+        <h1 class="title">Ki szereti csípősen?</h1>
+        <p class="subtitle">Kattints, és dobok egy nevet a listából. Egy fájl, bárhol fut (gépen is, GitHub Pages-en is).</p>
+      </div>
+
+      <div class="content">
+        <div class="result">
+          <div class="label">Eredmény</div>
+          <p id="eredmeny"></p>
+        </div>
+
+        <div class="controls">
+          <button type="button" onclick="dobas()">Dobás</button>
+          <span class="pill"><span class="dot"></span><span id="count"></span></span>
+          <span class="tiny" id="hint">Tipp: F12 → Console, ha valami nem megy.</span>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="tiny">Téma: chili random</div>
+        <div class="tiny">Kép: Wikipedia (Wikimedia Commons)</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const nevek = [
+      "Gemma",
+      "Annie",
+      "Barbon",
+      "Miguel",
+      "Daphné",
+      "Malachi",
+      "Vianne"
+    ];
+
+    document.getElementById("count").textContent = `Névlista: ${nevek.length} db`;
+
+    function dobas() {
+      const card = document.getElementById("card");
+      card.classList.remove("shake");
+      void card.offsetWidth;
+
+      const randomIndex = Math.floor(Math.random() * nevek.length);
+      document.getElementById("eredmeny").textContent = nevek[randomIndex];
+
+      card.classList.add("shake");
+    }
+
+    // opcionális: első betöltéskor is dobjon
+    dobas();
+  </script>
+</body>
+</html>
